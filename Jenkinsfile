@@ -21,7 +21,7 @@ pipeline {
                 publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: '/var/lib/jenkins/workspace/FINAL_HEALTH_CARE/target/surefire-reports', reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: '', useWrapperFileDirectly: true])
             }
         }
-        stage('Create-Docker-Image') {
+        stage('Create Docker-Image') {
             steps {
                 sh 'docker build -t nikhillara1989/final_health_care:1.0 .'
             }
