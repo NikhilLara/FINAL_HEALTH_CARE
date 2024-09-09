@@ -16,4 +16,4 @@ tags = {
   Name = "final-health-care-server"
   }
 provisioner "local-exec" {
-  command = "deployment-playbook "
+  command = "deployment-playbook /var/lib/jenkins/ "
