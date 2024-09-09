@@ -38,5 +38,12 @@ pipeline {
                 sh 'docker push nikhillara1989/final_health_care:1.0'
             }
         }
-    }
+        stage('Deploy to k8s') {
+            steps {
+                script{
+        kubernetesDeploy (configs: 'deployemntservice.yml', kubeconfigId: 'k8sconfigpwd')
+                }
+            }
+        }
+}
 }
