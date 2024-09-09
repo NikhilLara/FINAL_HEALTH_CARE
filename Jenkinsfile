@@ -38,5 +38,5 @@ pipeline {
                 sh 'docker push nikhillara1989/final_health_care:1.0'
             }
         }
-}
+    }
 }
