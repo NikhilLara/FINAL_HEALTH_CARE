@@ -19,6 +19,8 @@
 - name: Install Kubernetes on Ubuntu EC2
   hosts: all
   become: yes
+  become: true
+  connection: ssh
   tasks:
   - name: Update apt package lists
     apt: update_cache=yes
