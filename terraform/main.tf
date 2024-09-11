@@ -1,4 +1,3 @@
-
 resource "aws_instance" "final-banking-server" {
 ami = "ami-0e86e20dae9224db8"
 instance_type = "t2.micro"
@@ -20,6 +19,6 @@ provisioner "local-exec" {
   command = "echo ${aws_instance.final-banking-server.public_ip} > inventory"
   }
 provisioner "local-exec" {
-  command = "ansible-playbook /var/lib/jenkins/workspace/FINAL_BANKING_PROJECT/terraform/ansibleplaybook.yml"
+  command = "ansible-playbook /var/lib/jenkins/workspace/Finance/terraform/ansibleplaybook.yml"
   }
 }
