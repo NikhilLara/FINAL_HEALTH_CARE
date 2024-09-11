@@ -38,13 +38,6 @@ pipeline {
                 sh 'docker push nikhillara1989/final_health_care:1.0'
             }
         }
-        stage('Deploy to k8s') {
-            steps {
-                script{
-        kubernetesDeploy (configs: 'deployemntservice.yml', kubeconfigId: 'k8sconfigpwd')
-                }
-            }
-        }
         stage ('Config & Deployment') {
             steps {
                 withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'AwsAccessKey', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
