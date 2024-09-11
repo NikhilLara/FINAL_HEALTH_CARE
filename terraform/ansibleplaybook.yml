@@ -1,32 +1,27 @@
-- name : Configure Docker and K8s on EC2 Instances
-  hosts : all
+---
+- name: Configure Docker and K8s on EC2 Instances
+  hosts: all
   become: true
-  connection : ssh
-  tasks : 
-  - name: updating apt
-    command : sudo apt-get update
-
-  - name : Install Docker
-    command : sudo apt-get install -y docker.io
-    become : yes
-    become_user : root
-
-  - name : Start Docker Service
-    command : sudo systemctl start docker
-    become : yes
-    become_user : root
-
-  - name: Deploy Docker Container
-    command: docker run -itd -p 8084:8082 shubhamkushwah123/medicure:1.0
-
+  connection: ssh
+  tasks:
+    - name: updating apt
+      command: sudo apt-get update
+    - name: Install Docker
+      command: sudo apt-get install -y docker.io
+      become: yes
+      become_user: root
+    - name: Start Docker Service
+      command: sudo systemctl start docker
+      become: yes
+      become_user: root
+    - name: Deploy Docker Container
+      command: docker run -itd -p 8084:8082 shubhamkushwah123/medicure:1.0
 - name: Install Kubernetes on Ubuntu EC2
   hosts: ec2_instances
   become: yes
-
   tasks:
     - name: Update apt package lists
       apt: update_cache
-
     - name: Install required packages
       apt: pkg={{ item }} state=present
       with_items:
@@ -34,31 +29,27 @@
         - ca-certificates
         - curl
         - software-properties-common
-
     - name: Add Kubernetes GPG key
-      shell: |
-        curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-
+      shell: >
+        curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg |
+        apt-key add -
     - name: Add Kubernetes apt repository
       apt_repository:
         repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
         distribution: xenial
         components: main
         state: present
-
     - name: Update apt package lists
       apt: update_cache
-
     - name: Install Kubernetes
       apt: pkg={{ item }} state=present
       with_items:
         - kubectl
         - kubelet
         - kubeadm
-
     - name: Initialize Kubernetes cluster
       shell: kubeadm init --pod-network-cidr=10.244.0.0/16
-
     - name: Join Kubernetes cluster (optional)
-      shell: kubeadm join --token {{ output.stdout }} --discovery-token-ca-cert-hash {{ output.stdout }}
+      shell: kubeadm join --token {{ output.stdout }} --discovery-token-ca-cert-hash
+        {{ output.stdout }}
       when: ansible_host != ansible_primary_host
