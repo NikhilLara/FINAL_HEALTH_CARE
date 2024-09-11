@@ -4,7 +4,7 @@
   become: true
   connection: ssh
   tasks:
-    - name: updating apt
+    - name: update apt
       command: sudo apt-get update
     - name: Install Docker
       command: sudo apt-get install -y docker.io
