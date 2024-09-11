@@ -17,7 +17,7 @@
   - name: Deploy Docker Container
     command: docker run -itd -p 8084:8082 nikhillara1989/final_health_care:1.0
 - name: Install Kubernetes on Ubuntu EC2
-  hosts: ec2_instances
+  hosts: all
   become: yes
   tasks:
   - name: Update apt package lists
