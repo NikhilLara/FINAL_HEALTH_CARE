@@ -1,4 +1,4 @@
-resource "aws_instance" "final-banking-server" {
+resource "aws_instance" "final-healthcare-server" {
 ami = "ami-0e86e20dae9224db8"
 instance_type = "t2.micro"
 key_name = "keypair2"
@@ -13,10 +13,10 @@ provisioner "remote-exec" {
     inline = ["echo 'wait to start the instance' "]
 }
 tags = {
-  Name = "final-banking-server"
+  Name = "final-healthcare-server"
   }
 provisioner "local-exec" {
-  command = "echo ${aws_instance.final-banking-server.public_ip} > inventory"
+  command = "echo ${aws_instance.final-healthcare-server.public_ip} > inventory"
   }
 provisioner "local-exec" {
   command = "ansible-playbook /var/lib/jenkins/workspace/Finance/terraform/ansibleplaybook.yml"
