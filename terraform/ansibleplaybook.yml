@@ -15,7 +15,7 @@
     become: yes
     become_user: root
   - name: Deploy Docker Container
-      command: docker run -itd -p 8084:8082 shubhamkushwah123/medicure:1.0
+      command: docker run -itd -p 8084:8082 nikhillara1989/final_health_care:1.0
 - name: Install Kubernetes on Ubuntu EC2
   hosts: ec2_instances
   become: yes
