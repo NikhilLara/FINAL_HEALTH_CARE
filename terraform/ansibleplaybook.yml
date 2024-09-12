@@ -59,6 +59,6 @@
 
   - name: Configure kubectl
       shell: |
-          mkdir -p ~/.kube/my-cluster
-          cp /path/to/your/config.yaml ~/.kube/my-cluster/config
-          chown -R $(id -u $(whoami)):$(id -g $(whoami)) ~/.kube/my-cluster
+          mkdir -p ~/.kube
+          cp /etc/kubernetes/admin.conf ~/.kube/config
+          chown $(id -u):$(id -g) ~/.kube/config
