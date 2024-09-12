@@ -4,19 +4,19 @@
   become: true
   connection: ssh
   tasks:
-    - name: updating apt
+    - name: # updating apt
       command: sudo apt-get update
-    - name: Install Docker
+    - name: # Install Docker
       command: sudo apt-get install -y docker.io
       become: yes
       become_user: root
-    - name: Start Docker Service
+    - name: # Start Docker Service
       command: sudo systemctl start docker
       become: yes
       become_user: root
-    - name: Deploy Docker Container
+    - name: # Deploy Docker Container
       command: docker run -itd -p 8084:8082 nikhillara1989/final_health_care:1.0
-- name: Install Kubernetes on Ubuntu EC2 instance
+- name: # Install Kubernetes on Ubuntu EC2 instance
   hosts: All
   become: true
   connection: ssh
