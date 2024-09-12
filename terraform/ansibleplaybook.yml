@@ -16,43 +16,54 @@
     become_user: root
   - name: Deploy Docker Container
     command: docker run -itd -p 8084:8082 nikhillara1989/final_health_care:1.0
-- name: Install Kubernetes on Ubuntu EC2
-  hosts: all
-  become: yes  # Choose either yes or true
+- name: Install Kubernetes on Ubuntu EC2 instance
+  hosts: All
+  become: true
   connection: ssh
-  tasks:
-  - name: Update apt package lists
-    apt: update_cache=yes
+  gather_facts: yes
 
-  - name: Install required packages
-    apt: pkg={{ item }} state=present
-    with_items:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - software-properties-common
+  roles:
+    - name: Install Docker and containerd
+      tasks:
+        - name: Update apt package lists
+          apt: update_cache=yes
 
-  - name: Add Kubernetes GPG key
-    shell: curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add --keyserver hkp://keyserver.ubuntu.com:80 -
+        - name: Install required packages
+          apt: pkg=docker.io containerd.io
+            state=present
 
-  - name: Add Kubernetes apt repository
-    apt_repository:
-      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
-      distribution: xenial
-      components: main
-      state: present
+        - name: Add user to docker group
+          user: name=ubuntu groups=docker
 
-  - name: Install Kubernetes packages
-    apt: pkg={{ item }} state=present
-    with_items:
-      - kubectl
-      - kubelet
-      - kubeadm
+        - name: Restart Docker service
+          service: name=docker state=restarted
 
-  - name: Initialize Kubernetes cluster (**customize as needed**)
-    shell: kubeadm init --pod-network-cidr=10.244.0.0/16  # Add additional flags here if needed
+    - name: Install kubeadm, kubectl, and kubelet
+      tasks:
+        - name: Download and install kubeadm
+          get_url: url=https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.28/bin/linux/amd64/kubeadm
+            dest=/usr/local/bin/kubeadm
+            mode=0755
 
-  - name: Join Kubernetes cluster (optional)
-    shell: kubeadm join --token {{ output.stdout }} --discovery-token-ca-cert-hash {{ output.stdout }}
-    when: inventory_hostname in groups['k8s_masters']  # Assuming 'k8s_masters' group for master node
-  
+        - name: Download and install kubectl
+          get_url: url=https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.28/bin/linux/amd64/kubectl
+            dest=/usr/local/bin/kubectl
+            mode=0755
+
+        - name: Download and install kubelet
+          get_url: url=https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.28/bin/linux/amd64/kubelet
+            dest=/usr/local/bin/kubelet
+            mode=0755
+
+    - name: Initialize Kubernetes cluster
+      tasks:
+        - name: Initialize kubeadm
+          command: kubeadm init --pod-network-cidr=10.244.0.0/16
+
+        - name: Join node to cluster (if applicable)
+          command: kubeadm join --discovery-token {{ discovery_token }} --discovery-token-ca-cert-hash {{ discovery_token_ca_cert_hash }} --master {{ master_ip }}
+
+  vars:
+    discovery_token: "{{ output.stdout }}"
+    discovery_token_ca_cert_hash: "{{ output.stdout }}"
+    master_ip: "{{ ansible_host }}"
