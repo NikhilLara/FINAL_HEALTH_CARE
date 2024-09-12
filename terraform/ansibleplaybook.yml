@@ -18,8 +18,7 @@
     command: docker run -itd -p 8084:8082 nikhillara1989/final_health_care:1.0
 - name: Install Kubernetes on Ubuntu EC2
   hosts: all
-  become: yes
-  become: true
+  become: yes  # Choose either yes or true
   connection: ssh
   tasks:
   - name: Update apt package lists
@@ -34,7 +33,7 @@
       - software-properties-common
 
   - name: Add Kubernetes GPG key
-    shell: curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    shell: curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add --keyserver hkp://keyserver.ubuntu.com:80 -
 
   - name: Add Kubernetes apt repository
     apt_repository:
@@ -50,9 +49,10 @@
       - kubelet
       - kubeadm
 
-  - name: Initialize Kubernetes cluster
-    shell: kubeadm init --pod-network-cidr=10.244.0.0/16
+  - name: Initialize Kubernetes cluster (**customize as needed**)
+    shell: kubeadm init --pod-network-cidr=10.244.0.0/16  # Add additional flags here if needed
 
   - name: Join Kubernetes cluster (optional)
     shell: kubeadm join --token {{ output.stdout }} --discovery-token-ca-cert-hash {{ output.stdout }}
-    when: inventory_hostname in groups['k8s_masters']  # Assuming 'k8s_masters' group for master node    
+    when: inventory_hostname in groups['k8s_masters']  # Assuming 'k8s_masters' group for master node
+  
