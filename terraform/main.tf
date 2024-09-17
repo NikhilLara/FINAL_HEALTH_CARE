@@ -27,7 +27,7 @@ resource "aws_instance" "final-healthcare-server-K8S-MASTER" {
 }
 
 resource "aws_instance" "final-healthcare-server-K8S-worker-node" {
-  count = var.worker_node_count
+  count = 2
 
   ami           = "ami-0e86e20dae9224db8"
   instance_type = "t2.micro"
@@ -43,7 +43,7 @@ resource "aws_instance" "final-healthcare-server-K8S-worker-node" {
 
   tags = {
     Name     = "KUBERNETES-worker-nodes ${count.index}"
-    Role     = "worker node"  # Corrected role for worker nodes
+    Role     = "worker node"
   }
 
   provisioner "local-exec" {
