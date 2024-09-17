@@ -57,3 +57,4 @@ provisioner "local-exec" {
   command = "ansible-playbook /var/lib/jenkins/workspace/Finance/terraform/ansibleplaybook.yml"
   }
 }
+}
