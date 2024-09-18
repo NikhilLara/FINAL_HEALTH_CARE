@@ -17,7 +17,7 @@ resource "aws_instance" "final-healthcare-server-K8S-MASTER" {
   }
 
   tags = {
-    Name     = "KUBERNETES-MAIN"
+    Name     = "final-healthcare-server-K8S-MASTER"
     Role     = "control plane node"
   }
 
@@ -42,7 +42,7 @@ resource "aws_instance" "final-healthcare-server-K8S-worker-node" {
   }
 
   tags = {
-    Name     = "KUBERNETES-worker-nodes ${count.index}"
+    Name     = "final-healthcare-server-K8S-worker-node ${count.index}"
     Role     = "worker node"
   }
 
