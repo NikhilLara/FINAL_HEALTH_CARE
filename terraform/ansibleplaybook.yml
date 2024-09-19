@@ -1,51 +1,46 @@
-- name : Configure Docker and K8s on EC2 Instances
-  hosts : all
+- name: Configure Docker and K8s on EC2 Instances
+  hosts: all
   become: true
-  connection : ssh
-  tasks : 
-  - name: updating apt
-    command : sudo apt-get update
-
-  - name : Install Docker
-    command : sudo apt-get install -y docker.io
-    become : yes
-    become_user : root
-
-  - name : Start Docker Service
-    command : sudo systemctl start docker
-    become : yes
-    become_user : root
-
-  - name: Deploy Docker Container
-    command: docker run -itd -p 8084:8082 nikhillara1989/final_health_care:1.0
-
-- name: Basic Setup
-  - hosts: all
-  become: yes
   tasks:
-    - name: Install required packages
+    - name: Update apt
       apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - gnupg-agent
-          - software-properties-common
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Start Docker Service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Deploy Docker Container
+      docker_container:
+        name: health_care
+        image: nikhillara1989/final_health_care:1.0
+        state: started
+        ports:
+          - "8084:8082"
+
+- name: Setup Kubernetes Cluster
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
         state: present
         update_cache: yes
 
-    - name: Add Kubernetes apt-key
-      apt_key:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-        state: present
-
-    - name: Add Kubernetes repository
+    - name: Add Kubernetes apt repository
       apt_repository:
-        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        repo: "deb http://apt.kubernetes.io/ kubernetes-xenial main"
         state: present
-        filename: kubernetes
 
-    - name: Install Kubernetes components
+    - name: Install Kubernetes packages
       apt:
         name:
           - kubelet
@@ -54,58 +49,30 @@
         state: present
         update_cache: yes
 
-    - name: Disable swap
-      command: swapoff -a
-      when: ansible_swaptotal_mb > 0
-
-    - name: Remove swap entry from /etc/fstab
-      lineinfile:
-        path: /etc/fstab
-        regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
-        line: '# \1'
-        backrefs: yes
-
-    - name: Enable kubelet service
-      systemd:
-        name: kubelet
-        enabled: yes
-        state: started
-
-- hosts: master
+- name: Initialize Kubernetes Master
+  hosts: master
   become: yes
   tasks:
     - name: Initialize Kubernetes cluster
-      command: kubeadm init --pod-network-cidr=10.244.0.0/16
-      args:
-        creates: /etc/kubernetes/admin.conf
+      command: kubeadm init --apiserver-advertise-address=<master_private_ip> --pod-network-cidr=192.168.0.0/16
+      register: init_output
 
-    - name: Create .kube directory for the user
-      file:
-        path: "{{ ansible_env.HOME }}/.kube"
-        state: directory
-        mode: '0755'
+    - name: Set up kubeconfig for root
+      command: "{{ item }}"
+      with_items:
+        - mkdir -p $HOME/.kube
+        - cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        - chown $(id -u):$(id -g) $HOME/.kube/config
+      when: init_output.changed
 
-    - name: Copy kube config to user's .kube directory
-      copy:
-        src: /etc/kubernetes/admin.conf
-        dest: "{{ ansible_env.HOME }}/.kube/config"
-        remote_src: yes
-        mode: '0600'
+    - name: Install Calico network plugin
+      command: kubectl apply -f https://docs.projectcalico.org/v3.14/manifests/calico.yaml
+      when: init_output.changed
 
-    - name: Install Flannel network
-      command: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-      environment:
-        KUBECONFIG: /etc/kubernetes/admin.conf
-
-- hosts: workers
+- name: Join Worker Nodes to Cluster
+  hosts: workers
   become: yes
   tasks:
-    - name: Get join command
-      command: kubeadm token create --print-join-command
-      register: join_command
-      delegate_to: "{{ groups['master'][0] }}"
-
-    - name: Join the cluster
-      command: "{{ join_command.stdout }}"
-
+    - name: Join Kubernetes cluster
+      command: kubeadm join <master_private_ip>:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash>
 
