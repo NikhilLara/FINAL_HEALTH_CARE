@@ -1,0 +1,6 @@
+[master]
+master ansible_host=<master_public_ip> ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/your-key-pair.pem
+
+[workers]
+worker1 ansible_host=<worker1_public_ip> ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/your-key-pair.pem
+worker2 ansible_host=<worker2_public_ip> ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/your-key-pair.pem
