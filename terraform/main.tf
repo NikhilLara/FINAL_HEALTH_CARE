@@ -56,37 +56,6 @@ resource "aws_instance" "final-healthcare-server-K8S-worker-node" {
   provisioner "local-exec" {
     command = "echo 'worker-${count.index} ${self.public_ip}' >> ./files/hosts"
   }
-
-resource "ansible_host" "Kubernetes_Main_host" {
-  depends_on = [
-    aws_instance.Kubernetes-Main
-  ]
-  name = "control_plane"
-  groups = ["master"]
-  variables = {
-    ansible_user = "ubuntu"
-    ansible_host = aws_instance.Kubernetes-Main.public_ip
-    ansible_ssh_private_key_file = "./private-key.pem"
-    node_hostname = "master"
-  }
-}
-
-resource "ansible_host" "kubernetes_worker_nodes_host" {
-  depends_on = [
-    #aws_instance.kubernetes_worker_nodes
-    ansible_host.kubernetes_worker_nodes.id
-  ]
-  count = 2
-  name = "worker-${count.index}"
-  groups = ["workers"]
-  variables = {
-    node_hostname = "worker-${count.index}"
-    ansible_user = "ubuntu"
-    ansible_host = aws_instance.Kubernetes-Worker-nodes[count.index].public_ip
-    ansible_ssh_private_key_file = "./private-key.pem"
-  }
-}
-
   provisioner "remote-exec" {
     inline = ["ansible-playbook /var/lib/jenkins/workspace/Finance/terraform/ansibleplaybook.yml"]
   }
