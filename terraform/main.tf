@@ -4,6 +4,13 @@ resource "aws_instance" "final-healthcare-server-K8S-MASTER" {
   key_name      = "keypair2"
   vpc_security_group_ids = ["sg-0624c6a8b6420566d"]
 
+ provisioner "remote-exec" {
+    inline = [ 
+      "sudo apt update -y",
+      "sudo apt install ansible -y"
+     ]
+  }
+
   connection {
     type        = "ssh"
     user       = "ubuntu"
