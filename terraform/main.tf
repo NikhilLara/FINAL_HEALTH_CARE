@@ -7,6 +7,9 @@ resource "aws_instance" "final-healthcare-server-K8S-MASTER" {
  provisioner "remote-exec" {
     inline = [ 
       "sudo apt update -y",
+      "sudo apt-get install -y software-properties-common",
+      "sudo apt-add-repository ppa:ansible/ansible",
+      "sudo apt update -y",
       "sudo apt install ansible -y"
      ]
   }
