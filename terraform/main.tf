@@ -4,19 +4,19 @@ resource "aws_instance" "final-healthcare-server-K8S-MASTER" {
   key_name      = "keypair2"
   vpc_security_group_ids = ["sg-0624c6a8b6420566d"]
 
- provisioner "remote-exec" {
+  provisioner "remote-exec" {
     inline = [ 
       "sudo apt update -y",
       "sudo apt-get install -y software-properties-common",
       "sudo apt-add-repository ppa:ansible/ansible",
       "sudo apt update -y",
       "sudo apt install ansible -y"
-     ]
+    ]
   }
 
   connection {
     type        = "ssh"
-    user       = "ubuntu"
+    user        = "ubuntu"
     private_key = file("./keypair2.pem")
     host        = self.public_ip
   }
@@ -27,8 +27,8 @@ resource "aws_instance" "final-healthcare-server-K8S-MASTER" {
   }
 
   tags = {
-    Name     = "final-healthcare-server-K8S-MASTER"
-    Role     = "control plane node"
+    Name = "final-healthcare-server-K8S-MASTER"
+    Role = "control plane node"
   }
 
   provisioner "local-exec" {
@@ -46,19 +46,20 @@ resource "aws_instance" "final-healthcare-server-K8S-worker-node" {
 
   connection {
     type        = "ssh"
-    user       = "ubuntu"
+    user        = "ubuntu"
     private_key = file("./keypair2.pem")
     host        = self.public_ip
   }
 
   tags = {
-    Name     = "final-healthcare-server-K8S-worker-node ${count.index}"
-    Role     = "worker node"
+    Name = "final-healthcare-server-K8S-worker-node ${count.index}"
+    Role = "worker node"
   }
 
   provisioner "local-exec" {
     command = "echo 'worker-${count.index} ${self.public_ip}' >> ./files/hosts"
   }
+
   provisioner "remote-exec" {
     inline = ["ansible-playbook /var/lib/jenkins/workspace/Finance/terraform/ansibleplaybook.yml"]
   }
