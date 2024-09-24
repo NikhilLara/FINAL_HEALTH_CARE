@@ -2,6 +2,14 @@
   hosts: all
   become: true
   tasks:
+    - name: Update package lists
+      apt: update_cache=yes
+
+    - name: Install Ansible
+      apt:
+        name: ansible
+        state: present
+        
     - name: Update apt
       apt:
         update_cache: yes
